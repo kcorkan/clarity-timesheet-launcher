@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CATS-Clarity Timesheet Launcher-0.1</title>
+    <!--  (c) 2017 CA Technologies.  All Rights Reserved. -->
+    <!--  Build Date: Wed Jun 09 2021 12:55:43 GMT-0600 (Mountain Daylight Time) -->
+
+    <script type="text/javascript">
+        var APP_BUILD_DATE = "Wed Jun 09 2021 12:55:43 GMT-0600 (Mountain Daylight Time)";
+        var ARTIFACT = "";
+        var BUILDER  = "kc683795";
+        var CHECKSUM = 2807297573;
+    </script>
+
+    <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
+    <!-- our highcharts (needed so that we can add patterns)
+    <script type="text/javascript" src="/apps/2.1/lib/analytics/analytics-all.js"></script>
+    -->
+
+
+    <script type="text/javascript">
+        Rally.onReady(function() {
+            Ext.define("Rally.technicalservices.InfoLink",{extend:"Rally.ui.dialog.Dialog",alias:"widget.tsinfolink",informationHtml:null,title:"Build Information",defaults:{padding:5,margin:5},closable:!0,draggable:!0,autoShow:!0,width:350,informationalConfig:null,showLog:!1,logger:null,items:[{xtype:"container",itemId:"information"},{xtype:"container",itemId:"button_box"}],initComponent:function(){Ext.id(this);this.title="<span class='icon-help'> </span>"+this.title,this.callParent(arguments)},_generateChecksum:function(a){var b,c=305419896;for(a=a.replace(/var CHECKSUM = .*;/,""),a=a.replace(/var BUILDER  = .*;/,""),a=a.replace(/\s/g,""),b=0;b<a.length;b++)c+=a.charCodeAt(b)*b;return c},_checkChecksum:function(a){var b=Ext.create("Deft.Deferred"),c=this;return Ext.Ajax.request({url:document.URL,params:{id:1},success:function(a){if(text=a.responseText,CHECKSUM){var d=c._generateChecksum(text);if(CHECKSUM!==d)return void b.resolve(!1)}b.resolve(!0)}}),b.promise},_addToContainer:function(a){var b=Ext.apply({xtype:"container",height:200,overflowY:!0},this.informationalConfig);a.add(b)},afterRender:function(){var a=Rally.getApp();if(!Ext.isEmpty(this.informationalConfig)){var b=this.down("#information");this._addToContainer(b)}this.showLog&&this.logger&&this.down("#button_box").add({xtype:"rallybutton",text:"Show Log",listeners:{scope:this,click:function(){this.logger.displayLog()}}}),a.isExternal()?this.addDocked({xtype:"container",cls:"build-info",padding:2,dock:"bottom",html:"... Running externally"}):this._checkChecksum(a).then({scope:this,success:function(a){a||this.addDocked({xtype:"container",cls:"build-info",dock:"bottom",padding:2,html:'<span class="icon-warning"> </span>Checksums do not match'})},failure:function(a){console.log("oops:",a)}}),this.callParent(arguments)},beforeRender:function(){if(this.callParent(arguments),this.informationHtml&&this.addDocked({xtype:"component",componentCls:"intro-panel",padding:2,html:this.informationHtml,dock:"bottom"}),this.addDocked({xtype:"container",cls:"build-info",padding:2,dock:"bottom",html:"This app was created by the CA AC Technical Services Team."}),APP_BUILD_DATE){var a=Ext.String.format("Built on: {0} <br/>Built by: {1}",APP_BUILD_DATE,BUILDER);ARTIFACT&&(a=a+"<br/>Source artifact: "+ARTIFACT),this.addDocked({xtype:"container",cls:"build-info",padding:2,dock:"top",html:a})}}}),Ext.define("Rally.technicalservices.Logger",{saveForLater:!1,saveLines:100,logArray:[],constructor:function(a){Ext.apply(this,a)},setSaveForLater:function(a){this.saveForLater=a},log:function(a){var b="[ "+Ext.util.Format.date(new Date,"Y-m-d H:i:s.u")+" ]",c=[];c=Ext.Array.push(c,[b]),c=Ext.Array.push(c,Ext.Array.slice(arguments,0)),this.saveForLater&&(this.logArray||(this.logArray=[]),this.logArray.push(c.join(" ")),this.logArray.length>this.saveLines&&this.logArray.shift()),window.console&&console.log.apply(console,c)},getLogText:function(){return this.logArray&&0!==this.logArray.length?this.logArray.join("<br/>"):"-- no log --"},displayLog:function(){var a=this.getLogText();this.popup=Ext.create("Rally.ui.dialog.Dialog",{width:Ext.getBody().getWidth()-20,height:Ext.getBody().getHeight()-20,closable:!0,title:"Log",autoShow:!0,layout:"border",defaults:{layout:"fit",width:"50%",border:!1},items:[{region:"center",xtype:"container",html:a,autoScroll:!0}]})}}),Ext.define("TSUtilities",{singleton:!0,loadWsapiRecords:function(a){var b=Ext.create("Deft.Deferred"),c={model:"Defect",fetch:["ObjectID"]};return Ext.create("Rally.data.wsapi.Store",Ext.Object.merge(c,a)).load({callback:function(a,c,d){d?b.resolve(a):(console.error("Failed: ",c),b.reject("Problem loading: "+c.error.errors.join(". ")))}}),b.promise},loadAStoreWithAPromise:function(a,b){var c=Ext.create("Deft.Deferred");return Ext.create("Rally.data.wsapi.Store",{model:a,fetch:b}).load({callback:function(a,b,d){d?c.resolve(this):(console.error("Failed: ",b),c.reject("Problem loading: "+b.error.errors.join(". ")))}}),c.promise}}),Ext.define("Rally.app.ClarityTimesheetLauncher",{extend:"Rally.app.App",logger:new Rally.technicalservices.Logger,mixins:["Rally.clientmetrics.ClientMetricsRecordable"],appName:"Clarity Timesheet Launcher",config:{defaultSettings:{ppmHost:null,ppmPort:443}},autoScroll:!1,timesheetSuffix:"/pm/integration.html#",loggedInMessage:'Connection to Clarity server <a href="{0}" target="clarityWindow">{1}</a> launched.<br/><br/><a href="{0}" target="clarityWindow">Click here to access or re-launch</a>.',launch:function(){var a=this.getPPMHost(),b=this.getPPMPort();this.validateConfig(a,b).then({success:this.addLauncher,failure:this.showAppMessage,scope:this})},addLauncher:function(){var a=this.getPPMHost(),b=this.getPPMPort(),c=this.buildPPMTimesheetURL(a,b);this.getHeight()||600;this.logger.log("addLauncher",c);var d=Ext.String.format(this.loggedInMessage,c,a);this.add({xtype:"container",html:'<div class="secondary-message" style="font-family: ProximaNova,Helvetica,Arial;text-align:center;color:#8a8a8a;font-size:12pt;font-style:italic">'+d}),this.launchWindow(c)},launchWindow:function(a){this.currentWindow&&this.currentWindow.closed!==!0?this.currentWindow.focus():this.currentWindow=window.open(a,"clarityWindow")},validateConfig:function(a,b){var c=Ext.create("Deft.Deferred");return a?c.resolve():c.reject("No Clarity Server and Port is configured.  Please work with an administrator to configure your Clarity https server."),c},buildPPMTimesheetURL:function(a,b){var c=Ext.String.format("https://{0}",a);return b&&(c=Ext.String.format("{0}:{1}",c,b)),c+this.timesheetSuffix},getPPMHost:function(){return this.getSetting("ppmHost")||null},getPPMPort:function(){return this.getSetting("ppmPort")||null},showAppMessage:function(a){this.removeAll(),this.add({xtype:"container",html:Ext.String.format('<div class="no-data-container"><div class="secondary-message">{0}</div></div>',a)})},getSettingsFields:function(){return[{xtype:"container",html:'<div class="secondary-message" style="font-family: ProximaNovaBold,Helvetica,Arial;text-align:left;color:#B81B10;font-size:12pt;">NOTE:  The Clarity server must be version 15.2 or above.</div>'},{name:"ppmHost",xtype:"rallytextfield",width:400,labelWidth:100,labelAlign:"right",fieldLabel:"Clarity Host name",margin:"10 0 10 0",maskRe:/[a-zA-Z0-9\.\-]/,emptyText:"Please enter a Host name or IP Address...",maxLength:255},{name:"ppmPort",xtype:"rallynumberfield",labelAlign:"right",fieldLabel:"Port (HTTPS)",labelWidth:100,emptyText:443,minValue:0,maxValue:65535,allowBlank:!0,allowDecimals:!1,allowExponential:!1}]}});
+
+               Rally.launchApp('Rally.app.ClarityTimesheetLauncher', {
+                   name: 'Clarity Timesheet Launcher'
+               });
+        });
+    </script>
+
+    <style type="text/css">
+
+.app {
+}
+.tsinfolink {
+    position:absolute;
+    right:0px;
+    width: 14px;
+    height: 14px;
+    border-radius: 7px;
+    text-align: center;
+    color: white;
+    background: #C0C0C0;
+    border-style: solid;
+    border-width: 1px;
+    margin-top: 25px;
+    margin-right: 5px;
+    cursor: pointer;
+}
+    </style>
+
+</head>
+<body></body>
+</html>
