@@ -14,7 +14,7 @@ Ext.define("Rally.app.ClarityTimesheetLauncher", {
         }
     },
     autoScroll: false,
-    timesheetSuffix:  '/pm/integration.html#',
+    timesheetSuffix:  '/pm/#/timesheets',
     loggedInMessage:  "Connection to Clarity server <a href=\"{0}\" target=\"clarityWindow\">{1}</a> launched.<br/><br/><a href=\"{0}\" target=\"clarityWindow\">Click here to access or re-launch</a>.",
 //https://knowledge.broadcom.com/external/article?articleId=206489
     launch: function() {
