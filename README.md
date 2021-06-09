@@ -12,9 +12,7 @@ If no Clarity server is configured, then a message to configure the clarity serv
 Clarity version must be version 15.2 or above.  
 
 A Clarity host name or IP address and (optionally) HTTPS port must be configured through the app settings.  
-The default HTTPS port is 443.
-
-X-Frame Options must also be enabled for the configured Clarity server.  
+The default HTTPS port is 443.  
 
 ![ScreenShot](/images/ppmtimesheet-app-settings.png)
 
