@@ -10,11 +10,12 @@ Ext.define("Rally.app.ClarityTimesheetLauncher", {
     config: {
         defaultSettings: {
             ppmHost: null,
-            ppmPort: 443
+            ppmPort: 443,
+            relativePath: null
         }
     },
     autoScroll: false,
-    timesheetSuffix:  '/pm/#/timesheets',
+    timesheetSuffix:  '/pm/integration.html#', //'/pm/#/timesheets',
     loggedInMessage:  "Connection to Clarity server <a href=\"{0}\" target=\"clarityWindow\">{1}</a> launched.<br/><br/><a href=\"{0}\" target=\"clarityWindow\">Click here to access or re-launch</a>.",
 //https://knowledge.broadcom.com/external/article?articleId=206489
     launch: function() {
@@ -31,7 +32,8 @@ Ext.define("Rally.app.ClarityTimesheetLauncher", {
     addLauncher: function(){
         var server = this.getPPMHost(),
         port = this.getPPMPort(),
-        url = this.buildPPMTimesheetURL(server, port),
+        relativePath = this.getPPMRelativePath(),
+        url = this.buildPPMTimesheetURL(server, port, relativePath),
         height = this.getHeight() || 600;
         this.logger.log("addLauncher",url);
 
@@ -62,18 +64,28 @@ Ext.define("Rally.app.ClarityTimesheetLauncher", {
 
         return deferred;
     },
-    buildPPMTimesheetURL: function(server, port){
+    buildPPMTimesheetURL: function(server, port, relativePath){
         var url = Ext.String.format("https://{0}",server);
         if (port){
             url = Ext.String.format("{0}:{1}", url, port);
         }
-        return url + this.timesheetSuffix;
+        if( relativePath ) {
+            if( !url.endsWith("/") && !relativePath.startsWith("/") ) {
+                url = url + "/";
+            } 
+            return url + relativePath;
+        } else {
+            return url + this.timesheetSuffix;        	
+        }
     },
     getPPMHost: function(){
         return this.getSetting('ppmHost') || null;
     },
     getPPMPort: function(){
         return this.getSetting('ppmPort') || null;
+    },
+    getPPMRelativePath: function(){
+        return this.getSetting('ppmRelativePathWithParams') || null;
     },
     showAppMessage: function(msg){
         this.removeAll();
@@ -110,6 +122,18 @@ Ext.define("Rally.app.ClarityTimesheetLauncher", {
             allowBlank: true,
             allowDecimals: false,
             allowExponential: false
+        },{
+            name: 'ppmRelativePathWithParams',
+            xtype: 'rallytextfield',
+            width: 605,
+            labelWidth: 150,
+            labelAlign: 'right',
+            fieldLabel: 'Clarity Host Relative Path (for SSO only)',
+            margin: '10 0 10 0',
+            //maskRe:  /[a-zA-Z0-9\.\-]/,
+            //emptyText: 'In SSO environment, enter relative path with any parameters of IdP initiated SSO PPM URL here and enter host address above ...',
+            emptyText: 'In SSO environment, enter relative path with any parameters of IdP initiated SSO Clarity URL here...',
+            maxLength: 500
         }];
     }
 });
