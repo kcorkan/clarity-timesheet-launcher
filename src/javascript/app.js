@@ -16,7 +16,7 @@ Ext.define("Rally.app.ClarityTimesheetLauncher", {
     },
     autoScroll: false,
     timesheetSuffix:  '/pm/integration.html#', //'/pm/#/timesheets',
-    loggedInMessage:  "Connection to Clarity server <a href=\"{0}\" target=\"clarityWindow\">{1}</a> launched.<br/><br/><a href=\"{0}\" target=\"clarityWindow\">Click here to access or re-launch</a>.",
+    loggedInMessage:  "Connection to the Clarity timesheet has been launched in a separate tab.<br/><br/>Your browser pop-up blocker may interfere with this process.<br/><br/><a href=\"{0}\" target=\"clarityWindow\">Click here to access or re-launch Clarity.</a><br/><br/>If you will be accessing the Clarity timesheet regularly, you may wish to always allow popus from this site.",
 //https://knowledge.broadcom.com/external/article?articleId=206489
     launch: function() {
 
@@ -105,7 +105,7 @@ Ext.define("Rally.app.ClarityTimesheetLauncher", {
             width: 600,
             labelWidth: 225,
             labelAlign: 'right',
-            fieldLabel: 'Clarity Host name',
+            fieldLabel: 'Clarity Host name (for SSO this will be the IdP URL)',
             margin: '10 0 10 0',
             maskRe:  /[a-zA-Z0-9\.\-]/,
             emptyText: 'Please enter a Host name or IP Address...',
